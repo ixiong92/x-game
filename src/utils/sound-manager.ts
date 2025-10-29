@@ -224,14 +224,42 @@ class SoundManager {
         this.bgmAudio = new Audio(src)
         this.bgmAudio.loop = true
         this.bgmAudio.volume = this.musicVolume
+        // iOS 兼容性设置
+        this.bgmAudio.setAttribute('playsinline', 'true')
+        this.bgmAudio.setAttribute('webkit-playsinline', 'true')
+        this.bgmAudio.crossOrigin = 'anonymous'
       }
-      
-      this.bgmAudio.play().catch(error => {
-        console.error('播放背景音乐失败:', error)
-      })
+
+      const playPromise = this.bgmAudio.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error('播放背景音乐失败:', error)
+          // 如果自动播放失败，尝试通过用户交互重新播放
+          this.setupAudioPlayOnUserInteraction()
+        })
+      }
     } catch (error) {
       console.error('创建背景音乐失败:', error)
     }
+  }
+
+  /**
+   * 设置用户交互时播放音乐
+   */
+  private setupAudioPlayOnUserInteraction() {
+    const playAudio = () => {
+      if (this.bgmAudio && this.bgmAudio.paused) {
+        this.bgmAudio.play().catch(err => {
+          console.error('用户交互播放失败:', err)
+        })
+      }
+      // 移除事件监听
+      document.removeEventListener('click', playAudio)
+      document.removeEventListener('touchstart', playAudio)
+    }
+
+    document.addEventListener('click', playAudio, { once: true })
+    document.addEventListener('touchstart', playAudio, { once: true })
   }
 
   /**

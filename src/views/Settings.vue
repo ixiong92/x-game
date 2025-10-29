@@ -136,6 +136,18 @@
               @change="saveSettings"
             />
           </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label">全屏显示</span>
+              <span class="setting-desc">在支持的设备上以全屏模式运行</span>
+            </div>
+            <el-switch
+              v-model="settings.fullscreenEnabled"
+              size="large"
+              @change="handleFullscreenToggle"
+            />
+          </div>
         </div>
       </GameCard>
 
@@ -206,7 +218,8 @@ const settings = ref({
   hapticEnabled: true,
   animationEnabled: true,
   starBackgroundEnabled: true,
-  particleEnabled: true
+  particleEnabled: true,
+  fullscreenEnabled: false
 })
 
 const loadSettings = () => {
@@ -245,11 +258,6 @@ const handleVolumeChange = (value: number) => {
 const handleMusicToggle = (value: boolean) => {
   soundManager.setMusicEnabled(value)
   saveSettings()
-  if (value) {
-    soundManager.playMusic()
-  } else {
-    soundManager.stopMusic()
-  }
 }
 
 const handleMusicVolumeChange = (value: number) => {
@@ -262,6 +270,42 @@ const handleHapticToggle = (value: boolean) => {
   if (value) {
     HapticFeedback.success()
   }
+}
+
+const handleFullscreenToggle = (value: boolean) => {
+  saveSettings()
+  if (value) {
+    // 尝试进入全屏模式
+    const elem = document.documentElement
+    const requestFullscreen = elem.requestFullscreen ||
+                             (elem as any).webkitRequestFullscreen ||
+                             (elem as any).mozRequestFullScreen ||
+                             (elem as any).msRequestFullscreen
+
+    if (requestFullscreen) {
+      requestFullscreen.call(elem).catch((err: Error) => {
+        console.error('全屏请求失败:', err)
+        ElMessage.warning('您的浏览器不支持全屏模式')
+        settings.value.fullscreenEnabled = false
+      })
+    } else {
+      ElMessage.warning('您的浏览器不支持全屏模式')
+      settings.value.fullscreenEnabled = false
+    }
+  } else {
+    // 退出全屏模式
+    const exitFullscreen = document.exitFullscreen ||
+                          (document as any).webkitExitFullscreen ||
+                          (document as any).mozCancelFullScreen ||
+                          (document as any).msExitFullscreen
+
+    if (exitFullscreen) {
+      exitFullscreen.call(document).catch((err: Error) => {
+        console.error('退出全屏失败:', err)
+      })
+    }
+  }
+  HapticFeedback.light()
 }
 
 const testSound = () => {
@@ -279,7 +323,8 @@ const resetSettings = () => {
     hapticEnabled: true,
     animationEnabled: true,
     starBackgroundEnabled: true,
-    particleEnabled: true
+    particleEnabled: true,
+    fullscreenEnabled: false
   }
   saveSettings()
   soundManager.setEnabled(true)

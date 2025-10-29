@@ -116,6 +116,7 @@ import soundManager from '../../utils/sound-manager'
 import { HapticFeedback } from '../../utils/touch-handler'
 import { EnemyPlaneManager } from '../../utils/game-logic'
 import type { EnemyPlane as EnemyPlaneType } from '../../types/game'
+import bgmBattle from '../../assets/sounds/bgm_battle.mp3'
 
 const router = useRouter()
 const gameStore = useGameStore()
@@ -341,18 +342,64 @@ onMounted(() => {
     router.push('/number-battle/settings')
     return
   }
-  
+
+  // 尝试进入全屏模式
+  const enterFullscreen = () => {
+    const elem = document.documentElement
+    const requestFullscreen = elem.requestFullscreen ||
+                             (elem as any).webkitRequestFullscreen ||
+                             (elem as any).mozRequestFullScreen ||
+                             (elem as any).msRequestFullscreen
+
+    if (requestFullscreen) {
+      requestFullscreen.call(elem).catch((err: Error) => {
+        console.warn('全屏请求失败:', err)
+      })
+    }
+  }
+
+  // 在用户交互后进入全屏
+  const enterFullscreenOnInteraction = () => {
+    enterFullscreen()
+    document.removeEventListener('click', enterFullscreenOnInteraction)
+    document.removeEventListener('touchstart', enterFullscreenOnInteraction)
+  }
+
+  // 添加事件监听以支持全屏
+  document.addEventListener('click', enterFullscreenOnInteraction, { once: true })
+  document.addEventListener('touchstart', enterFullscreenOnInteraction, { once: true })
+
+  // 尝试立即进入全屏
+  enterFullscreen()
+
   // 生成敌机
   generateEnemies()
-  
+
   // 开始倒计时
   if (gameStore.gameState.config.difficulty === 'hard') {
     startCountdown()
   }
+
+  // iOS 兼容性：在用户交互后播放背景音乐
+  const playAudioOnInteraction = () => {
+    soundManager.playBGM(bgmBattle)
+    // 移除事件监听
+    document.removeEventListener('click', playAudioOnInteraction)
+    document.removeEventListener('touchstart', playAudioOnInteraction)
+  }
+
+  // 添加事件监听以支持iOS自动播放限制
+  document.addEventListener('click', playAudioOnInteraction, { once: true })
+  document.addEventListener('touchstart', playAudioOnInteraction, { once: true })
+
+  // 尝试立即播放（某些情况下可能成功）
+  soundManager.playBGM(bgmBattle)
 })
 
 onBeforeUnmount(() => {
   stopCountdown()
+  // 停止背景音乐
+  soundManager.stopBGM()
 })
 </script>
 

@@ -146,7 +146,7 @@ const config = ref({
   numberRange: 10,
   difficulty: 'easy' as DifficultyLevel,
   questionCount: 10,
-  enemyMoving: true
+  enemyMoving: false  // 默认敌机不移动
 })
 
 const modes = [
