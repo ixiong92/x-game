@@ -1,0 +1,218 @@
+/**
+ * 全局变量定义
+ * 适配 iPad 的响应式设计
+ */
+
+// ==================== 颜色系统 ====================
+
+// 主题色
+$primary-color: #4A90E2;
+$primary-light: #6BA3E8;
+$primary-dark: #3A7BC8;
+
+// 功能色
+$success-color: #52C41A;
+$warning-color: #FAAD14;
+$error-color: #F5222D;
+$info-color: #1890FF;
+
+// 中性色
+$text-primary: #262626;
+$text-secondary: #595959;
+$text-tertiary: #8C8C8C;
+$text-disabled: #BFBFBF;
+$border-color: #D9D9D9;
+$background-color: #F5F7FA;
+$bg-primary: #FFFFFF;
+$bg-secondary: #F5F5F5;
+$bg-tertiary: #FAFAFA;
+$white: #FFFFFF;
+
+// 游戏主题色
+$game-bg-start: #0F2027;
+$game-bg-middle: #203A43;
+$game-bg-end: #2C5364;
+
+// 敌机颜色
+$enemy-blue: #4A90E2;
+$enemy-red: #F5222D;
+$enemy-green: #52C41A;
+$enemy-yellow: #FAAD14;
+
+// ==================== 字体系统 ====================
+
+// 字体家族
+$font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+
+// 字体大小 - iPad 优化
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-base: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-2xl: 24px;
+$font-size-3xl: 30px;
+$font-size-4xl: 36px;
+$font-size-5xl: 48px;
+
+// 游戏专用大字体
+$game-font-xs: 16px;
+$game-font-sm: 20px;
+$game-font-base: 24px;
+$game-font-lg: 32px;
+$game-font-xl: 40px;
+$game-font-2xl: 48px;
+$game-font-3xl: 64px;
+
+// 字重
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ==================== 间距系统 ====================
+
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-base: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+$spacing-3xl: 64px;
+
+// ==================== 圆角 ====================
+
+$border-radius-sm: 4px;
+$border-radius-base: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+$border-radius-round: 50%;
+
+// ==================== 阴影 ====================
+
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-base: 0 4px 8px rgba(0, 0, 0, 0.12);
+$shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+$shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.18);
+
+// 游戏特效阴影
+$glow-primary: 0 0 20px rgba(74, 144, 226, 0.6);
+$glow-success: 0 0 20px rgba(82, 196, 26, 0.6);
+$glow-error: 0 0 20px rgba(245, 34, 45, 0.6);
+
+// ==================== 动画时间 ====================
+
+$transition-fast: 0.15s;
+$transition-base: 0.3s;
+$transition-slow: 0.5s;
+
+// ==================== 层级 ====================
+
+$z-index-dropdown: 1000;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// ==================== 断点 ====================
+
+$breakpoint-xs: 480px;
+$breakpoint-sm: 768px;   // iPad 竖屏
+$breakpoint-md: 1024px;  // iPad 横屏
+$breakpoint-lg: 1366px;  // iPad Pro
+$breakpoint-xl: 1920px;
+
+// ==================== Mixins ====================
+
+// 响应式断点
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'xs' {
+    @media (max-width: $breakpoint-xs) { @content; }
+  }
+  @else if $breakpoint == 'sm' {
+    @media (min-width: $breakpoint-sm) { @content; }
+  }
+  @else if $breakpoint == 'md' {
+    @media (min-width: $breakpoint-md) { @content; }
+  }
+  @else if $breakpoint == 'lg' {
+    @media (min-width: $breakpoint-lg) { @content; }
+  }
+  @else if $breakpoint == 'xl' {
+    @media (min-width: $breakpoint-xl) { @content; }
+  }
+}
+
+// Flexbox 居中
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// 文本省略
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略
+@mixin text-ellipsis-multi($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 清除浮动
+@mixin clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// 触摸反馈
+@mixin touch-feedback {
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+// 游戏卡片样式
+@mixin game-card {
+  background: $white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-base;
+  transition: all $transition-base;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+}
+
+// 渐变背景
+@mixin gradient-bg($start, $end) {
+  background: linear-gradient(135deg, $start 0%, $end 100%);
+}
+
+// 游戏背景
+@mixin game-background {
+  background: linear-gradient(
+    135deg,
+    $game-bg-start 0%,
+    $game-bg-middle 50%,
+    $game-bg-end 100%
+  );
+}
+

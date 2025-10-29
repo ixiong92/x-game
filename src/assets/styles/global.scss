@@ -1,0 +1,241 @@
+/**
+ * 全局样式
+ * 包含重置样式和通用样式
+ */
+
+@import './variables.scss';
+@import './animations.scss';
+
+// ==================== 全局重置 ====================
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  color: $text-primary;
+  background-color: $background-color;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+// ==================== 通用样式 ====================
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+// 禁用文本选择（游戏场景）
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+// 触摸优化
+.touch-action-none {
+  touch-action: none;
+}
+
+// ==================== 布局工具类 ====================
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  @include flex-center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
+// ==================== 间距工具类 ====================
+
+.m-0 { margin: 0; }
+.mt-0 { margin-top: 0; }
+.mr-0 { margin-right: 0; }
+.mb-0 { margin-bottom: 0; }
+.ml-0 { margin-left: 0; }
+
+.p-0 { padding: 0; }
+.pt-0 { padding-top: 0; }
+.pr-0 { padding-right: 0; }
+.pb-0 { padding-bottom: 0; }
+.pl-0 { padding-left: 0; }
+
+@each $size in (xs, sm, base, lg, xl, 2xl, 3xl) {
+  $value: map-get((
+    xs: $spacing-xs,
+    sm: $spacing-sm,
+    base: $spacing-base,
+    lg: $spacing-lg,
+    xl: $spacing-xl,
+    2xl: $spacing-2xl,
+    3xl: $spacing-3xl
+  ), $size);
+  
+  .m-#{$size} { margin: $value; }
+  .mt-#{$size} { margin-top: $value; }
+  .mr-#{$size} { margin-right: $value; }
+  .mb-#{$size} { margin-bottom: $value; }
+  .ml-#{$size} { margin-left: $value; }
+  
+  .p-#{$size} { padding: $value; }
+  .pt-#{$size} { padding-top: $value; }
+  .pr-#{$size} { padding-right: $value; }
+  .pb-#{$size} { padding-bottom: $value; }
+  .pl-#{$size} { padding-left: $value; }
+}
+
+// ==================== 文本工具类 ====================
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.text-primary { color: $text-primary; }
+.text-secondary { color: $text-secondary; }
+.text-disabled { color: $text-disabled; }
+.text-white { color: $white; }
+
+.font-light { font-weight: $font-weight-light; }
+.font-normal { font-weight: $font-weight-normal; }
+.font-medium { font-weight: $font-weight-medium; }
+.font-semibold { font-weight: $font-weight-semibold; }
+.font-bold { font-weight: $font-weight-bold; }
+
+.text-ellipsis {
+  @include text-ellipsis;
+}
+
+// ==================== 游戏专用样式 ====================
+
+.game-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  @include game-background;
+}
+
+.game-page {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-feedback {
+  @include touch-feedback;
+}
+
+// ==================== 响应式 ====================
+
+// iPad 竖屏
+@include respond-to('sm') {
+  html {
+    font-size: 16px;
+  }
+}
+
+// iPad 横屏
+@include respond-to('md') {
+  html {
+    font-size: 18px;
+  }
+}
+
+// iPad Pro
+@include respond-to('lg') {
+  html {
+    font-size: 20px;
+  }
+}
+
+// ==================== Element Plus 样式覆盖 ====================
+
+.el-button {
+  font-weight: $font-weight-medium;
+  border-radius: $border-radius-base;
+  transition: all $transition-base;
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.el-card {
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-base;
+  transition: all $transition-base;
+  
+  &:hover {
+    box-shadow: $shadow-lg;
+  }
+}
+
