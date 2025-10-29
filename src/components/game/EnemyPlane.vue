@@ -85,6 +85,7 @@ interface Props {
   moveSpeed?: number
   moveRange?: number
   isMoving?: boolean
+  isClickDisabled?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -97,7 +98,8 @@ const props = withDefaults(defineProps<Props>(), {
   movePattern: 'horizontal',
   moveSpeed: 2,
   moveRange: 150,
-  isMoving: true
+  isMoving: true,
+  isClickDisabled: false
 })
 
 const emit = defineEmits<{
@@ -139,26 +141,26 @@ const planeStyle = computed(() => {
 })
 
 const handleClick = () => {
-  if (props.isDestroyed || props.isHit) return
-  
+  if (props.isDestroyed || props.isHit || props.isClickDisabled) return
+
   HapticFeedback.light()
   emit('click', props.id)
 }
 
 const handleTouchStart = (event: TouchEvent) => {
-  if (props.isDestroyed || props.isHit) return
-  
+  if (props.isDestroyed || props.isHit || props.isClickDisabled) return
+
   // 显示触摸波纹
   const touch = event.touches[0]
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
   const x = touch.clientX - rect.left
   const y = touch.clientY - rect.top
-  
+
   rippleStyle.value = {
     left: `${x}px`,
     top: `${y}px`
   }
-  
+
   showRipple.value = true
   setTimeout(() => {
     showRipple.value = false

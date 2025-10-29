@@ -39,8 +39,16 @@
           :move-speed="enemy.moveSpeed"
           :move-range="enemy.moveRange"
           :is-moving="gameStore.gameState.config.enemyMoving"
+          :is-click-disabled="isClickDisabled"
           @click="handleEnemyClick"
         />
+
+        <!-- 错误提示 -->
+        <transition name="error-message">
+          <div v-if="showErrorMessage" class="error-message">
+            {{ errorMessageText }}
+          </div>
+        </transition>
       </div>
 
       <!-- 控制按钮 -->
@@ -130,6 +138,9 @@ const particleType = ref<'explosion' | 'success' | 'combo' | 'star'>('explosion'
 const particleCount = ref(12)
 const particleTrigger = ref(0)
 const particlePosition = ref({ x: 50, y: 50 })
+const isClickDisabled = ref(false)
+const showErrorMessage = ref(false)
+const errorMessageText = ref('')
 
 const currentQuestion = computed(() => gameStore.gameState.currentQuestion)
 const currentBattleQuestion = computed(() => gameStore.currentBattleQuestion)
@@ -165,46 +176,59 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 // 处理敌机点击
 const handleEnemyClick = (enemyId: string) => {
+  // 如果点击被禁用，直接返回
+  if (isClickDisabled.value) return
+
   const enemy = enemies.value.find(e => e.id === enemyId)
   if (!enemy || enemy.isHit || enemy.isDestroyed) return
-  
+
   activeEnemyId.value = enemyId
-  
+
   // 标记为已击中
   enemy.isHit = true
-  
+
   if (enemy.isCorrect) {
-    // 答对
+    // 答对 - 禁止点击其他飞机
+    isClickDisabled.value = true
     soundManager.play('correct')
     HapticFeedback.success()
-    
+
     // 显示成功粒子
     particleType.value = 'success'
     particleCount.value = 16
     particleTrigger.value++
-    
+
     // 延迟后摧毁敌机
     setTimeout(() => {
       enemy.isDestroyed = true
       soundManager.play('explosion')
-      
+
+      // 其他飞机也一并爆炸消失
+      enemies.value.forEach((e) => {
+        if (e.id !== enemy.id && !e.isDestroyed) {
+          e.isDestroyed = true
+        }
+      })
+
       // 处理正确答案
       gameStore.handleCorrectAnswer()
-      
+
       // 检查是否有连击
       if (gameStore.gameState.progress.combo > 1) {
         soundManager.play('combo')
         particleType.value = 'combo'
         particleTrigger.value++
       }
-      
+
       // 下一题
       setTimeout(() => {
+        isClickDisabled.value = false
         nextQuestion()
       }, 800)
     }, 300)
   } else {
-    // 答错
+    // 答错 - 禁止点击，显示错误提示
+    isClickDisabled.value = true
     soundManager.play('wrong')
     HapticFeedback.error()
 
@@ -214,14 +238,23 @@ const handleEnemyClick = (enemyId: string) => {
     particleTrigger.value++
     particlePosition.value = { x: enemy.position.x, y: enemy.position.y }
 
+    // 显示错误提示 - 只显示错误和表情，不显示正确答案
+    errorMessageText.value = `❌ 答错了！😢`
+    showErrorMessage.value = true
+
     // 处理错误答案，传递用户选择的答案
     gameStore.handleWrongAnswer(enemy.value)
 
-    // 恢复状态
+    // 禁止点击2秒，然后自动进入下一题
     setTimeout(() => {
+      showErrorMessage.value = false
+      isClickDisabled.value = false
       enemy.isHit = false
       activeEnemyId.value = ''
-    }, 1000)
+
+      // 自动进入下一题
+      nextQuestion()
+    }, 2000)
   }
 }
 
@@ -527,6 +560,62 @@ onBeforeUnmount(() => {
   to {
     opacity: 1;
   }
+}
+
+// 错误提示样式
+.error-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #FF6B6B, #FF4757);
+  color: $white;
+  padding: $spacing-lg $spacing-2xl;
+  border-radius: 20px;
+  font-size: 28px;
+  font-weight: $font-weight-bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(255, 107, 107, 0.4);
+  z-index: 500;
+  white-space: nowrap;
+  animation: errorBounce 0.5s ease;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+
+  @media (min-width: 1024px) and (orientation: landscape) {
+    font-size: 24px;
+    padding: $spacing-base $spacing-lg;
+  }
+}
+
+@keyframes errorBounce {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+// 错误提示过渡动画
+.error-message-enter-active,
+.error-message-leave-active {
+  transition: all 0.3s ease;
+}
+
+.error-message-enter-from {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+}
+
+.error-message-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
 }
 
 // 响应式适配
