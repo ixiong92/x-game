@@ -40,7 +40,8 @@ const defaultProgress: GameProgress = {
   wrongCount: 0,
   score: 0,
   combo: 0,
-  timeLeft: 0
+  timeLeft: 0,
+  wrongQuestions: []
 }
 
 export const useGameStore = defineStore('game', {
@@ -250,16 +251,8 @@ export const useGameStore = defineStore('game', {
       this.progress.correctCount++
       this.progress.combo++
 
-      // 计算得分
-      const baseScore = 10
-      const comboBonus = this.config.enableBonus
-        ? Math.floor(this.progress.combo / 2) * 5
-        : 0
-      const difficultyBonus = this.config.difficulty === 'hard' ? 5 : 0
-      const timeBonus = this.calculateTimeBonus()
-
-      const totalScore = baseScore + comboBonus + difficultyBonus + timeBonus
-      this.progress.score += totalScore
+      // 新的分数计算：每题1分
+      this.progress.score += 1
 
       this.syncGameState()
     },
@@ -267,9 +260,27 @@ export const useGameStore = defineStore('game', {
     /**
      * 处理错误答案
      */
-    handleWrongAnswer() {
+    handleWrongAnswer(userAnswer?: number) {
       this.progress.wrongCount++
       this.progress.combo = 0
+
+      // 新的分数计算：错误-1分，最低0分
+      this.progress.score = Math.max(0, this.progress.score - 1)
+
+      // 记录错误的题目
+      if (!this.progress.wrongQuestions) {
+        this.progress.wrongQuestions = []
+      }
+
+      if (userAnswer !== undefined && this.currentBattleQuestion) {
+        this.progress.wrongQuestions.push({
+          index: this.progress.currentIndex + 1,
+          question: this.currentBattleQuestion.displayText,
+          correctAnswer: this.currentBattleQuestion.correctAnswer,
+          userAnswer: userAnswer
+        })
+      }
+
       this.syncGameState()
     },
 
@@ -341,7 +352,8 @@ export const useGameStore = defineStore('game', {
         correctCount: this.progress.correctCount,
         wrongCount: this.progress.wrongCount,
         maxCombo,
-        averageScore
+        averageScore,
+        wrongQuestions: this.progress.wrongQuestions || []
       }
     },
 

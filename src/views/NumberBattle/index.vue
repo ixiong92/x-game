@@ -207,10 +207,16 @@ const handleEnemyClick = (enemyId: string) => {
     // 答错
     soundManager.play('wrong')
     HapticFeedback.error()
-    
-    // 处理错误答案
-    gameStore.handleWrongAnswer()
-    
+
+    // 显示错误粒子（大X）
+    particleType.value = 'error'
+    particleCount.value = 1
+    particleTrigger.value++
+    particlePosition.value = { x: enemy.position.x, y: enemy.position.y }
+
+    // 处理错误答案，传递用户选择的答案
+    gameStore.handleWrongAnswer(enemy.value)
+
     // 恢复状态
     setTimeout(() => {
       enemy.isHit = false
@@ -251,7 +257,7 @@ const startCountdown = () => {
     
     if (timeLeft.value <= 0) {
       // 超时，算错误
-      gameStore.handleWrongAnswer()
+      gameStore.handleWrongAnswer(0)  // 0表示超时
       nextQuestion()
     }
   }, 1000)

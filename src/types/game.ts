@@ -51,6 +51,7 @@ export interface GameProgress {
   score: number
   combo: number
   timeLeft: number
+  wrongQuestions?: WrongQuestion[]  // 错误的题目列表
 }
 
 export interface GameState {
@@ -74,6 +75,13 @@ export interface BattleQuestion {
   allAnswers: number[]
 }
 
+export interface WrongQuestion {
+  index: number
+  question: string
+  correctAnswer: number
+  userAnswer: number
+}
+
 export interface GameResult {
   config: GameConfig
   progress: GameProgress
@@ -85,5 +93,6 @@ export interface GameResult {
   wrongCount: number
   maxCombo: number
   averageScore: number
+  wrongQuestions?: WrongQuestion[]  // 错误的题目列表
 }
 
