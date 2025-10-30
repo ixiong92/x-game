@@ -108,6 +108,8 @@ const emit = defineEmits<{
 
 const currentX = ref(0)
 const currentY = ref(0)
+const baseX = ref(0)  // 初始位置基准点
+const baseY = ref(0)  // 初始位置基准点
 const moveDirection = ref(1)
 const moveAngle = ref(0)
 const animationTimer = ref<number | null>(null)
@@ -170,32 +172,37 @@ const handleTouchStart = (event: TouchEvent) => {
 const startMoving = () => {
   stopMoving()
 
+  // 保存初始位置作为基准点
+  baseX.value = currentX.value
+  baseY.value = currentY.value
+
   // 根据移动模式初始化位置
+  // 飞机在初始位置周边移动，而不是从边缘开始
   // 使用字符串模式而不是数字
   switch (props.movePattern) {
-    case 'horizontal': // 水平移动
-      currentX.value = -props.moveRange
-      currentY.value = 0
+    case 'horizontal': // 水平移动：在初始位置左右移动
+      currentX.value = baseX.value
+      currentY.value = baseY.value
       moveDirection.value = 1
       break
-    case 'vertical': // 垂直移动
-      currentX.value = 0
-      currentY.value = -props.moveRange
+    case 'vertical': // 垂直移动：在初始位置上下移动
+      currentX.value = baseX.value
+      currentY.value = baseY.value
       moveDirection.value = 1
       break
-    case 'circular': // 椭圆移动
+    case 'circular': // 椭圆移动：围绕初始位置旋转
       moveAngle.value = 0
-      currentX.value = props.moveRange * 0.6
-      currentY.value = 0
+      currentX.value = baseX.value + props.moveRange * 0.6
+      currentY.value = baseY.value
       break
-    case 'zigzag': // 之字形移动
-      currentX.value = -props.moveRange
-      currentY.value = -props.moveRange * 0.5
+    case 'zigzag': // 之字形移动：在初始位置周边之字形移动
+      currentX.value = baseX.value
+      currentY.value = baseY.value
       moveDirection.value = 1
       break
     default:
-      currentX.value = 0
-      currentY.value = 0
+      currentX.value = baseX.value
+      currentY.value = baseY.value
   }
 
   animationTimer.value = window.setInterval(() => {
@@ -221,10 +228,12 @@ const startMoving = () => {
 }
 
 const moveHorizontal = () => {
+  // 在初始位置周边左右移动
   currentX.value += props.moveSpeed * moveDirection.value
 
-  const leftBound = -props.moveRange
-  const rightBound = props.moveRange
+  // 移动范围是相对于初始位置的
+  const leftBound = baseX.value - props.moveRange
+  const rightBound = baseX.value + props.moveRange
 
   if (currentX.value <= leftBound) {
     currentX.value = leftBound
@@ -234,15 +243,18 @@ const moveHorizontal = () => {
     moveDirection.value = -1
   }
 
+  // 轻微的上下浮动效果
   const floatOffset = Math.sin(Date.now() / 800) * 2
-  currentY.value = floatOffset
+  currentY.value = baseY.value + floatOffset
 }
 
 const moveVertical = () => {
+  // 在初始位置周边上下移动
   currentY.value += props.moveSpeed * moveDirection.value
 
-  const topBound = -props.moveRange
-  const bottomBound = props.moveRange
+  // 移动范围是相对于初始位置的
+  const topBound = baseY.value - props.moveRange
+  const bottomBound = baseY.value + props.moveRange
 
   if (currentY.value <= topBound) {
     currentY.value = topBound
@@ -252,8 +264,9 @@ const moveVertical = () => {
     moveDirection.value = -1
   }
 
+  // 轻微的左右浮动效果
   const floatOffset = Math.sin(Date.now() / 800) * 2
-  currentX.value = floatOffset
+  currentX.value = baseX.value + floatOffset
 }
 
 const moveCircular = () => {
@@ -262,27 +275,25 @@ const moveCircular = () => {
   const radiusX = props.moveRange * 0.5
   const radiusY = props.moveRange * 0.3
 
-  currentX.value = Math.cos(moveAngle.value) * radiusX
-  currentY.value = Math.sin(moveAngle.value) * radiusY
+  currentX.value = baseX.value + Math.cos(moveAngle.value) * radiusX
+  currentY.value = baseY.value + Math.sin(moveAngle.value) * radiusY
 }
 
 const moveZigzag = () => {
-  // 之字形移动：水平和垂直交替
+  // 之字形移动：在初始位置周边水平和垂直交替移动
   currentX.value += props.moveSpeed * moveDirection.value
 
-  // 每移动一定距离后改变方向
-  const zigzagThreshold = props.moveRange * 0.5
-
-  if (currentX.value <= -props.moveRange) {
-    currentX.value = -props.moveRange
+  // 移动范围是相对于初始位置的
+  if (currentX.value <= baseX.value - props.moveRange) {
+    currentX.value = baseX.value - props.moveRange
     moveDirection.value = 1
     // 改变垂直位置
-    currentY.value = currentY.value > 0 ? -props.moveRange * 0.2 : props.moveRange * 0.2
-  } else if (currentX.value >= props.moveRange) {
-    currentX.value = props.moveRange
+    currentY.value = currentY.value > baseY.value ? baseY.value - props.moveRange * 0.2 : baseY.value + props.moveRange * 0.2
+  } else if (currentX.value >= baseX.value + props.moveRange) {
+    currentX.value = baseX.value + props.moveRange
     moveDirection.value = -1
     // 改变垂直位置
-    currentY.value = currentY.value > 0 ? -props.moveRange * 0.3 : props.moveRange * 0.3
+    currentY.value = currentY.value > baseY.value ? baseY.value - props.moveRange * 0.3 : baseY.value + props.moveRange * 0.3
   }
 }
 
@@ -722,29 +733,160 @@ onBeforeUnmount(() => {
   animation: particleExplode 0.8s ease-out forwards;
 }
 
-.explosion-particle:nth-child(2) { --angle: 0deg; }
-.explosion-particle:nth-child(3) { --angle: 30deg; }
-.explosion-particle:nth-child(4) { --angle: 60deg; }
-.explosion-particle:nth-child(5) { --angle: 90deg; }
-.explosion-particle:nth-child(6) { --angle: 120deg; }
-.explosion-particle:nth-child(7) { --angle: 150deg; }
-.explosion-particle:nth-child(8) { --angle: 180deg; }
-.explosion-particle:nth-child(9) { --angle: 210deg; }
-.explosion-particle:nth-child(10) { --angle: 240deg; }
-.explosion-particle:nth-child(11) { --angle: 270deg; }
-.explosion-particle:nth-child(12) { --angle: 300deg; }
-.explosion-particle:nth-child(13) { --angle: 330deg; }
+/* 12个方向的爆炸粒子 */
+.explosion-particle:nth-child(2) { animation: particleExplode0 0.8s ease-out forwards; }
+.explosion-particle:nth-child(3) { animation: particleExplode30 0.8s ease-out forwards; }
+.explosion-particle:nth-child(4) { animation: particleExplode60 0.8s ease-out forwards; }
+.explosion-particle:nth-child(5) { animation: particleExplode90 0.8s ease-out forwards; }
+.explosion-particle:nth-child(6) { animation: particleExplode120 0.8s ease-out forwards; }
+.explosion-particle:nth-child(7) { animation: particleExplode150 0.8s ease-out forwards; }
+.explosion-particle:nth-child(8) { animation: particleExplode180 0.8s ease-out forwards; }
+.explosion-particle:nth-child(9) { animation: particleExplode210 0.8s ease-out forwards; }
+.explosion-particle:nth-child(10) { animation: particleExplode240 0.8s ease-out forwards; }
+.explosion-particle:nth-child(11) { animation: particleExplode270 0.8s ease-out forwards; }
+.explosion-particle:nth-child(12) { animation: particleExplode300 0.8s ease-out forwards; }
+.explosion-particle:nth-child(13) { animation: particleExplode330 0.8s ease-out forwards; }
 
-@keyframes particleExplode {
+/* 0度 - 右 */
+@keyframes particleExplode0 {
   0% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
   100% {
-    transform: translate(
-      calc(-50% + 60px * cos(var(--angle, 0deg))),
-      calc(-50% + 60px * sin(var(--angle, 0deg)))
-    ) scale(0);
+    transform: translate(calc(-50% + 60px), -50%) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 30度 - 右上 */
+@keyframes particleExplode30 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + 52px), calc(-50% - 30px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 60度 - 上偏右 */
+@keyframes particleExplode60 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + 30px), calc(-50% - 52px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 90度 - 上 */
+@keyframes particleExplode90 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, calc(-50% - 60px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 120度 - 上偏左 */
+@keyframes particleExplode120 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% - 30px), calc(-50% - 52px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 150度 - 左上 */
+@keyframes particleExplode150 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% - 52px), calc(-50% - 30px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 180度 - 左 */
+@keyframes particleExplode180 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% - 60px), -50%) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 210度 - 左下 */
+@keyframes particleExplode210 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% - 52px), calc(-50% + 30px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 240度 - 下偏左 */
+@keyframes particleExplode240 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% - 30px), calc(-50% + 52px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 270度 - 下 */
+@keyframes particleExplode270 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, calc(-50% + 60px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 300度 - 下偏右 */
+@keyframes particleExplode300 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + 30px), calc(-50% + 52px)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* 330度 - 右下 */
+@keyframes particleExplode330 {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + 52px), calc(-50% + 30px)) scale(0);
     opacity: 0;
   }
 }

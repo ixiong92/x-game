@@ -293,13 +293,13 @@ const clearData = async () => {
 </script>
 
 <style scoped lang="scss">
-@import '../assets/styles/variables.scss';
+@use '../assets/styles/variables.scss' as *;
 
 .user-center-container {
   width: 100%;
   height: 100%;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .user-center-content {

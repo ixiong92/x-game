@@ -346,13 +346,13 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@import '../assets/styles/variables.scss';
+@use '../assets/styles/variables.scss' as *;
 
 .settings-container {
   width: 100%;
   height: 100%;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .settings-content {

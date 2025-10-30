@@ -163,7 +163,7 @@ const goToParentPanel = () => {
 </script>
 
 <style scoped lang="scss">
-@import '../assets/styles/variables.scss';
+@use '../assets/styles/variables.scss' as *;
 
 .home-container {
   width: 100%;
@@ -172,7 +172,7 @@ const goToParentPanel = () => {
   flex-direction: column;
   padding: $spacing-xl;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .home-header {

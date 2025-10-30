@@ -92,7 +92,7 @@ const handleTouchStart = (event: TouchEvent) => {
 </script>
 
 <style scoped lang="scss">
-@import '../../assets/styles/variables.scss';
+@use '../../assets/styles/variables.scss' as *;
 
 .game-button {
   position: relative;

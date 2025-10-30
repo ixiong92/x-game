@@ -146,7 +146,7 @@ const config = ref({
   numberRange: 10,
   difficulty: 'easy' as DifficultyLevel,
   questionCount: 10,
-  enemyMoving: false  // 默认敌机不移动
+  enemyMoving: true  // 默认敌机移动开启
 })
 
 const modes = [
@@ -229,13 +229,13 @@ const goBack = () => {
 </script>
 
 <style scoped lang="scss">
-@import '../../assets/styles/variables.scss';
+@use '../../assets/styles/variables.scss' as *;
 
 .settings-container {
   width: 100%;
   height: 100%;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .settings-content {

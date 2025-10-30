@@ -279,7 +279,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@import '../assets/styles/variables.scss';
+@use '../assets/styles/variables.scss' as *;
 
 .result-container {
   width: 100%;
@@ -302,8 +302,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-base;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 
   // iPad 横屏优化
   @media (min-width: 1024px) and (orientation: landscape) {

@@ -3,8 +3,9 @@
  * 包含重置样式和通用样式
  */
 
-@import './variables.scss';
-@import './animations.scss';
+@use 'sass:map';
+@use './variables.scss' as *;
+@use './animations.scss' as *;
 
 // ==================== 全局重置 ====================
 
@@ -129,7 +130,7 @@ body {
 .pl-0 { padding-left: 0; }
 
 @each $size in (xs, sm, base, lg, xl, 2xl, 3xl) {
-  $value: map-get((
+  $value: map.get((
     xs: $spacing-xs,
     sm: $spacing-sm,
     base: $spacing-base,

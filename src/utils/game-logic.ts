@@ -171,7 +171,7 @@ export class EnemyPlaneManager {
       id: `enemy_${Date.now()}_${index}`,
       value: answer,
       isCorrect: answer === correctAnswer,  // 检查答案值是否等于正确答案
-      position: this.getInitialPosition(index),
+      position: this.getInitialPosition(index, answers.length),
       speed: this.randomFloat(1, 2),
       color: colors[index % colors.length],
       isHit: false,
@@ -212,24 +212,49 @@ export class EnemyPlaneManager {
 
   /**
    * 获取初始位置
-   * 4个敌机分别位于4个象限的中间，每个象限有独立的活动范围
+   * 根据敌机数量动态分配位置，确保每架敌机有独立的活动区域
    * 游戏区域大小约为 1200x655，中心为 (0, 0)
-   * 驾驶舱被分成四个象限：
+   * 驾驶舱被分成多个象限：
    * - 左上象限：X轴 -600~0, Y轴 -327~0
    * - 右上象限：X轴 0~600, Y轴 -327~0
    * - 左下象限：X轴 -600~0, Y轴 0~327
    * - 右下象限：X轴 0~600, Y轴 0~327
    */
-  private static getInitialPosition(index: number): { x: number; y: number } {
+  private static getInitialPosition(index: number, totalCount?: number): { x: number; y: number } {
     // 游戏区域中心为 (0, 0)，相对位置
-    // 4个象限的中心位置，确保敌机不会相互交叉
-    const positions = [
-      { x: -150, y: -80 },    // 左上象限中间
-      { x: 150, y: -80 },     // 右上象限中间
-      { x: -150, y: 80 },     // 左下象限中间
-      { x: 150, y: 80 }       // 右下象限中间
-    ]
-    return positions[index % positions.length]
+    // 根据敌机总数动态分配位置
+
+    if (!totalCount || totalCount <= 4) {
+      // 4个或更少敌机：分别在4个象限
+      const positions = [
+        { x: -250, y: -130 },    // 左上象限
+        { x: 250, y: -130 },     // 右上象限
+        { x: -250, y: 130 },     // 左下象限
+        { x: 250, y: 130 }       // 右下象限
+      ]
+      return positions[index % positions.length]
+    } else if (totalCount <= 8) {
+      // 8个敌机：分别在8个方向
+      const positions = [
+        { x: -280, y: -150 },    // 左上
+        { x: 0, y: -180 },       // 上
+        { x: 280, y: -150 },     // 右上
+        { x: 320, y: 0 },        // 右
+        { x: 280, y: 150 },      // 右下
+        { x: 0, y: 180 },        // 下
+        { x: -280, y: 150 },     // 左下
+        { x: -320, y: 0 }        // 左
+      ]
+      return positions[index % positions.length]
+    } else {
+      // 更多敌机：使用圆形分布
+      const angle = (index / totalCount) * Math.PI * 2
+      const radius = 300
+      return {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius
+      }
+    }
   }
 
   /**

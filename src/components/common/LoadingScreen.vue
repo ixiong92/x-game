@@ -38,7 +38,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <style scoped lang="scss">
-@import '../../assets/styles/variables.scss';
+@use '../../assets/styles/variables.scss' as *;
 
 .loading-screen {
   position: fixed;

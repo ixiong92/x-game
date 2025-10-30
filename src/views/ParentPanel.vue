@@ -311,13 +311,13 @@ loadTimeControl()
 </script>
 
 <style scoped lang="scss">
-@import '../assets/styles/variables.scss';
+@use '../assets/styles/variables.scss' as *;
 
 .parent-panel-container {
   width: 100%;
   height: 100%;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .parent-panel-content {

@@ -25,6 +25,7 @@ interface Star {
   size: number
   duration: number
   delay: number
+  moveSpeed: number  // 星星下落速度
 }
 
 const stars = ref<Star[]>([])
@@ -37,7 +38,8 @@ const initStars = () => {
     y: Math.random() * 100,
     size: 1 + Math.random() * 3,
     duration: 2 + Math.random() * 3,
-    delay: Math.random() * 5
+    delay: Math.random() * 5,
+    moveSpeed: 3 + Math.random() * 4  // 3-7秒下落一个屏幕高度
   }))
 }
 
@@ -48,7 +50,8 @@ const getStarStyle = (star: Star) => {
     width: `${star.size}px`,
     height: `${star.size}px`,
     animationDuration: `${star.duration}s`,
-    animationDelay: `${star.delay}s`
+    animationDelay: `${star.delay}s`,
+    '--move-speed': `${star.moveSpeed}s`
   }
 }
 
@@ -58,7 +61,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@import '../../assets/styles/variables.scss';
+@use '../../assets/styles/variables.scss' as *;
 
 .star-background {
   position: fixed;
@@ -102,7 +105,7 @@ onMounted(() => {
   background: $white;
   border-radius: 50%;
   box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
-  animation: starTwinkle 3s ease-in-out infinite;
+  animation: starTwinkle 3s ease-in-out infinite, starMove var(--move-speed) linear infinite;
 }
 
 @keyframes starTwinkle {
@@ -113,6 +116,15 @@ onMounted(() => {
   50% {
     opacity: 1;
     transform: scale(1.2);
+  }
+}
+
+@keyframes starMove {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100vh);
   }
 }
 </style>
