@@ -48,10 +48,7 @@ const getStarStyle = (star: Star) => {
     left: `${star.x}%`,
     top: `${star.y}%`,
     width: `${star.size}px`,
-    height: `${star.size}px`,
-    animationDuration: `${star.duration}s`,
-    animationDelay: `${star.delay}s`,
-    '--move-speed': `${star.moveSpeed}s`
+    height: `${star.size}px`
   }
 }
 
@@ -80,16 +77,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #0F2027, #203A43, #2C5364);
-  animation: gradientShift 20s ease infinite;
-}
-
-@keyframes gradientShift {
-  0%, 100% {
-    filter: hue-rotate(0deg);
-  }
-  50% {
-    filter: hue-rotate(20deg);
-  }
 }
 
 .stars-layer {
@@ -104,28 +91,7 @@ onMounted(() => {
   position: absolute;
   background: $white;
   border-radius: 50%;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
-  animation: starTwinkle 3s ease-in-out infinite, starMove var(--move-speed) linear infinite;
-}
-
-@keyframes starTwinkle {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-@keyframes starMove {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(100vh);
-  }
+  opacity: 0.8;
 }
 </style>
 
