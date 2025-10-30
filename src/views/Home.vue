@@ -172,7 +172,14 @@ const goToParentPanel = () => {
   flex-direction: column;
   padding: $spacing-xl;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  // iPad 横屏时允许滚动
+  @media (min-width: 1024px) and (orientation: landscape) {
+    overflow-y: auto;
+  }
 }
 
 .home-header {

@@ -302,13 +302,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-base;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 
   // iPad 横屏优化
   @media (min-width: 1024px) and (orientation: landscape) {
     padding: $spacing-base;
     gap: $spacing-sm;
     max-height: 100vh;
+    overflow-y: auto;
   }
 }
 
