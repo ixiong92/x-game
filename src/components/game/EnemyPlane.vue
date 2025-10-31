@@ -115,6 +115,8 @@ const moveAngle = ref(0)
 const animationTimer = ref<number | null>(null)
 const showRipple = ref(false)
 const rippleStyle = ref({})
+const frozenX = ref<number | null>(null)  // 冻结的X位置
+const frozenY = ref<number | null>(null)  // 冻结的Y位置
 
 const planeClasses = computed(() => [
   `plane-${props.color}`,
@@ -125,13 +127,15 @@ const planeClasses = computed(() => [
 
 const planeStyle = computed(() => {
   const scale = props.isActive ? 1.15 : 1
-  const xPx = currentX.value
-  const yPx = currentY.value
+  // 如果位置被冻结，使用冻结的位置；否则使用当前位置
+  const xPx = frozenX.value !== null ? frozenX.value : currentX.value
+  const yPx = frozenY.value !== null ? frozenY.value : currentY.value
   const style: any = {
     left: `calc(50% + ${xPx}px)`,
     top: `calc(50% + ${yPx}px)`,
     transform: `translate(-50%, -50%) scale(${scale})`,
-    transition: props.isDestroyed ? 'none' : 'all 0.05s linear'
+    // 如果飞机被点击或销毁，禁用 transition；否则使用平滑过渡
+    transition: (props.isHit || props.isDestroyed) ? 'none' : 'all 0.05s linear'
   }
 
   // 如果是十六进制颜色，设置 CSS 变量
@@ -312,6 +316,16 @@ watch(() => props.isMoving, (newVal) => {
   }
 })
 
+watch(() => props.isHit, (newVal) => {
+  if (newVal) {
+    // 飞机被点击时立即停止移动，并冻结当前位置
+    stopMoving()
+    // 保存当前位置，防止后续任何位置变化
+    frozenX.value = currentX.value
+    frozenY.value = currentY.value
+  }
+})
+
 watch(() => props.isDestroyed, (newVal) => {
   if (newVal) {
     stopMoving()
@@ -321,6 +335,9 @@ watch(() => props.isDestroyed, (newVal) => {
 onMounted(() => {
   currentX.value = props.position.x || 0
   currentY.value = props.position.y || 0
+  // 重置冻结状态
+  frozenX.value = null
+  frozenY.value = null
 
   if (props.isMoving && !props.isDestroyed) {
     startMoving()
@@ -649,35 +666,15 @@ onBeforeUnmount(() => {
   bottom: -20px;
 }
 
-/* 击中效果 */
+/* 击中效果 - 禁用所有动画，防止位置改变 */
 .plane-hit {
-  animation: shake 0.3s ease;
+  animation: none !important;
+  transform: translate(-50%, -50%) !important;
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-/* 摧毁效果 */
+/* 摧毁效果 - 禁用所有动画，防止位置改变 */
 .plane-destroyed {
-  animation: explode 0.6s ease-out forwards;
-}
-
-@keyframes explode {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(0);
-    opacity: 0;
-  }
+  animation: none !important;
 }
 
 /* 爆炸效果 */

@@ -187,6 +187,11 @@ const handleEnemyClick = (enemyId: string) => {
   // 标记为已击中
   enemy.isHit = true
 
+  // 立即停止所有飞机的移动
+  enemies.value.forEach((e) => {
+    e.isHit = true
+  })
+
   if (enemy.isCorrect) {
     // 答对 - 禁止点击其他飞机
     isClickDisabled.value = true
