@@ -267,11 +267,12 @@ const goBack = () => {
 
 .settings-container {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .settings-content {

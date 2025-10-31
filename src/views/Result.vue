@@ -308,7 +308,7 @@ onMounted(() => {
 
 .result-container {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
@@ -317,6 +317,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 .result-content {

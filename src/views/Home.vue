@@ -167,7 +167,7 @@ const goToParentPanel = () => {
 
 .home-container {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   padding: $spacing-xl;
@@ -175,6 +175,7 @@ const goToParentPanel = () => {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .home-header {
