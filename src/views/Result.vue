@@ -101,20 +101,22 @@
           type="success"
           size="large"
           block
+          :disabled="!buttonsEnabled"
           @click="playAgain"
         >
           <el-icon><RefreshRight /></el-icon>
-          <span>再玩一次</span>
+          <span>再玩一次{{ !buttonsEnabled ? `(${countdownSeconds}s)` : '' }}</span>
         </GameButton>
-        
+
         <GameButton
           type="primary"
           size="large"
           block
+          :disabled="!buttonsEnabled"
           @click="goHome"
         >
           <el-icon><HomeFilled /></el-icon>
-          <span>返回首页</span>
+          <span>返回首页{{ !buttonsEnabled ? `(${countdownSeconds}s)` : '' }}</span>
         </GameButton>
       </div>
     </div>
@@ -182,6 +184,8 @@ const userStore = useUserStore()
 const showFireworks = ref(false)
 const fireworksTrigger = ref(0)
 const showWrongQuestionsDialog = ref(false)
+const buttonsEnabled = ref(false)
+const countdownSeconds = ref(5)
 
 const result = computed(() => gameStore.gameState.result || {
   score: 0,
@@ -264,7 +268,7 @@ onMounted(() => {
     router.push('/')
     return
   }
-  
+
   // 根据评级播放音效和特效
   if (result.value.grade === 'S' || result.value.grade === 'A') {
     showFireworks.value = true
@@ -275,6 +279,27 @@ onMounted(() => {
       fireworksTrigger.value++
     }, 1500)
   }
+
+  // 如果有错误题目，自动打开错误题目弹层
+  if (uniqueWrongQuestions.value.length > 0) {
+    setTimeout(() => {
+      showWrongQuestionsDialog.value = true
+    }, 500)
+  }
+
+  // 5秒后启用按钮，并显示倒计时
+  let countdown = 5
+  countdownSeconds.value = countdown
+
+  const countdownInterval = setInterval(() => {
+    countdown--
+    countdownSeconds.value = countdown
+
+    if (countdown <= 0) {
+      clearInterval(countdownInterval)
+      buttonsEnabled.value = true
+    }
+  }, 1000)
 })
 </script>
 
@@ -283,10 +308,13 @@ onMounted(() => {
 
 .result-container {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }

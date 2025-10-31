@@ -23,7 +23,7 @@ const defaultConfig: GameConfig = {
   totalQuestions: 10,
   difficulty: 'easy',
   enableBonus: true,
-  enemyMoving: true  // 默认敌机移动开启
+  enemyMoving: false  // 默认敌机移动关闭
 }
 
 // 默认题目
@@ -264,8 +264,8 @@ export const useGameStore = defineStore('game', {
       this.progress.wrongCount++
       this.progress.combo = 0
 
-      // 分数计算：错误-5分，最低0分
-      this.progress.score = Math.max(0, this.progress.score - 5)
+      // 分数计算：错误不减分
+      // this.progress.score 保持不变
 
       // 记录错误的题目
       if (!this.progress.wrongQuestions) {

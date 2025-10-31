@@ -167,7 +167,7 @@ const goToParentPanel = () => {
 
 .home-container {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   padding: $spacing-xl;
@@ -175,11 +175,6 @@ const goToParentPanel = () => {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-
-  // iPad 横屏时允许滚动
-  @media (min-width: 1024px) and (orientation: landscape) {
-    overflow-y: auto;
-  }
 }
 
 .home-header {

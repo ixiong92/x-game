@@ -297,16 +297,11 @@ const clearData = async () => {
 
 .user-center-container {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   position: relative;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-
-  // iPad 横屏时允许滚动
-  @media (min-width: 1024px) and (orientation: landscape) {
-    overflow-y: auto;
-  }
 }
 
 .user-center-content {
