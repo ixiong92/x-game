@@ -55,8 +55,8 @@
       <div class="explosion-flash"></div>
     </div>
 
-    <!-- 错误提示 -->
-    <div v-if="isHit && !isCorrect" class="wrong-indicator">
+    <!-- 错误提示 - 只在点击错误答案时显示 -->
+    <div v-if="props.isWrongAnswer" class="wrong-indicator">
       <div class="wrong-icon">
         <span class="wrong-text">✗</span>
       </div>
@@ -86,6 +86,7 @@ interface Props {
   moveRange?: number
   isMoving?: boolean
   isClickDisabled?: boolean
+  isWrongAnswer?: boolean  // 是否是被点击的错误答案
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -99,7 +100,8 @@ const props = withDefaults(defineProps<Props>(), {
   moveSpeed: 2,
   moveRange: 150,
   isMoving: true,
-  isClickDisabled: false
+  isClickDisabled: false,
+  isWrongAnswer: false
 })
 
 const emit = defineEmits<{

@@ -93,8 +93,9 @@ export class BattleQuestionGenerator {
       case 'add':
       case '+':
         // 加法：两个数都在范围内，结果可能超过范围
+        // 优化：让两个数都在范围内均匀分布，而不是一大一小
         operand1 = this.randomInt(safeMin, max)
-        operand2 = this.randomInt(safeMin, Math.max(safeMin, max - operand1))
+        operand2 = this.randomInt(safeMin, max)
         correctAnswer = operand1 + operand2
         operator = '+'
         break
@@ -102,7 +103,8 @@ export class BattleQuestionGenerator {
       case 'subtract':
       case '-':
         // 减法：确保结果为正数（operand1 > operand2）
-        operand1 = this.randomInt(Math.ceil(max / 2), max)
+        // 优化：让两个数都在范围内均匀分布
+        operand1 = this.randomInt(safeMin, max)
         operand2 = this.randomInt(safeMin, operand1 - 1)
         correctAnswer = operand1 - operand2
         operator = '-'

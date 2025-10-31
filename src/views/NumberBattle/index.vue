@@ -40,6 +40,7 @@
           :move-range="enemy.moveRange"
           :is-moving="gameStore.gameState.config.enemyMoving"
           :is-click-disabled="isClickDisabled"
+          :is-wrong-answer="enemy.isWrongAnswer"
           @click="handleEnemyClick"
         />
 
@@ -237,6 +238,9 @@ const handleEnemyClick = (enemyId: string) => {
     soundManager.play('wrong')
     HapticFeedback.error()
 
+    // 标记为错误答案（显示 X 号）
+    enemy.isWrongAnswer = true
+
     // 显示错误粒子（大X）
     particleType.value = 'error'
     particleCount.value = 1
@@ -255,6 +259,7 @@ const handleEnemyClick = (enemyId: string) => {
       showErrorMessage.value = false
       isClickDisabled.value = false
       enemy.isHit = false
+      enemy.isWrongAnswer = false
       activeEnemyId.value = ''
 
       // 自动进入下一题

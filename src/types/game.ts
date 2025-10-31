@@ -36,6 +36,7 @@ export interface EnemyPlane {
   movePattern?: MovePattern
   moveSpeed?: number
   moveRange?: number
+  isWrongAnswer?: boolean  // 是否是被点击的错误答案
 }
 
 export interface CurrentQuestion {
