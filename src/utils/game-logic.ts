@@ -9,28 +9,76 @@ import type { CalculationMode, BattleQuestion, EnemyPlane, MovePattern } from '.
  * 飞机大战题目生成器
  */
 export class BattleQuestionGenerator {
+  // 用于追踪已生成的题目，避免重复
+  private static generatedQuestions: Set<string> = new Set()
+
   /**
    * 生成题目
    */
   static generate(mode: CalculationMode, rangeMin: number, rangeMax: number): BattleQuestion {
-    const { operand1, operand2, operator, correctAnswer } = this.generateCalculation(mode, rangeMin, rangeMax)
-    const wrongAnswers = this.generateWrongAnswers(correctAnswer, rangeMin, rangeMax)
-    const allAnswers = this.shuffleAnswers([correctAnswer, ...wrongAnswers])
+    let question: BattleQuestion
+    let attempts = 0
+    const maxAttempts = 50
 
-    return {
-      id: this.generateId(),
-      operand1,
-      operand2,
-      operator,
-      correctAnswer,
-      displayText: `${operand1} ${operator} ${operand2} = ?`,
-      wrongAnswers,
-      allAnswers
+    // 尝试生成不重复的题目
+    do {
+      const { operand1, operand2, operator, correctAnswer } = this.generateCalculation(mode, rangeMin, rangeMax)
+      const questionKey = `${operand1}${operator}${operand2}`
+
+      if (!this.generatedQuestions.has(questionKey)) {
+        this.generatedQuestions.add(questionKey)
+
+        const wrongAnswers = this.generateWrongAnswers(correctAnswer, rangeMin, rangeMax)
+        const allAnswers = this.shuffleAnswers([correctAnswer, ...wrongAnswers])
+
+        question = {
+          id: this.generateId(),
+          operand1,
+          operand2,
+          operator,
+          correctAnswer,
+          displayText: `${operand1} ${operator} ${operand2} = ?`,
+          wrongAnswers,
+          allAnswers
+        }
+        break
+      }
+
+      attempts++
+    } while (attempts < maxAttempts)
+
+    // 如果超过最大尝试次数，清空缓存重新开始
+    if (attempts >= maxAttempts) {
+      this.generatedQuestions.clear()
+      const { operand1, operand2, operator, correctAnswer } = this.generateCalculation(mode, rangeMin, rangeMax)
+      const wrongAnswers = this.generateWrongAnswers(correctAnswer, rangeMin, rangeMax)
+      const allAnswers = this.shuffleAnswers([correctAnswer, ...wrongAnswers])
+
+      question = {
+        id: this.generateId(),
+        operand1,
+        operand2,
+        operator,
+        correctAnswer,
+        displayText: `${operand1} ${operator} ${operand2} = ?`,
+        wrongAnswers,
+        allAnswers
+      }
     }
+
+    return question
+  }
+
+  /**
+   * 重置题目缓存（游戏结束时调用）
+   */
+  static resetQuestionCache() {
+    this.generatedQuestions.clear()
   }
 
   /**
    * 生成计算题目
+   * 根据数字范围调整参数，确保能整除、避免负数
    */
   private static generateCalculation(mode: CalculationMode, min: number, max: number) {
     let operand1: number
@@ -44,6 +92,7 @@ export class BattleQuestionGenerator {
     switch (mode) {
       case 'add':
       case '+':
+        // 加法：两个数都在范围内，结果可能超过范围
         operand1 = this.randomInt(safeMin, max)
         operand2 = this.randomInt(safeMin, Math.max(safeMin, max - operand1))
         correctAnswer = operand1 + operand2
@@ -52,15 +101,26 @@ export class BattleQuestionGenerator {
 
       case 'subtract':
       case '-':
-        operand1 = this.randomInt(safeMin, max)
-        operand2 = this.randomInt(safeMin, Math.max(safeMin, operand1 - 1))
+        // 减法：确保结果为正数（operand1 > operand2）
+        operand1 = this.randomInt(Math.ceil(max / 2), max)
+        operand2 = this.randomInt(safeMin, operand1 - 1)
         correctAnswer = operand1 - operand2
         operator = '-'
         break
 
       case 'multiply':
       case '*':
-        const maxMultiplier = Math.min(10, max)
+        // 乘法：根据范围调整乘数
+        let maxMultiplier: number
+        if (max <= 10) {
+          maxMultiplier = Math.min(10, max)
+        } else if (max <= 20) {
+          maxMultiplier = 10
+        } else if (max <= 50) {
+          maxMultiplier = 10
+        } else {
+          maxMultiplier = 10
+        }
         operand1 = this.randomInt(safeMin, maxMultiplier)
         operand2 = this.randomInt(safeMin, maxMultiplier)
         correctAnswer = operand1 * operand2
@@ -69,8 +129,27 @@ export class BattleQuestionGenerator {
 
       case 'divide':
       case '/':
-        operand2 = this.randomInt(Math.max(2, safeMin), Math.min(10, max))
-        correctAnswer = this.randomInt(safeMin, Math.floor(max / operand2))
+        // 除法：确保能整除，避免小数
+        // 先生成除数和商，再计算被除数
+        let divisor: number
+        let quotient: number
+
+        if (max <= 10) {
+          divisor = this.randomInt(2, 5)
+          quotient = this.randomInt(safeMin, Math.floor(max / divisor))
+        } else if (max <= 20) {
+          divisor = this.randomInt(2, 6)
+          quotient = this.randomInt(safeMin, Math.floor(max / divisor))
+        } else if (max <= 50) {
+          divisor = this.randomInt(2, 8)
+          quotient = this.randomInt(safeMin, Math.floor(max / divisor))
+        } else {
+          divisor = this.randomInt(2, 10)
+          quotient = this.randomInt(safeMin, Math.floor(max / divisor))
+        }
+
+        operand2 = divisor
+        correctAnswer = quotient
         operand1 = correctAnswer * operand2
         operator = '÷'
         break
@@ -92,33 +171,49 @@ export class BattleQuestionGenerator {
   
   /**
    * 生成错误答案
+   * 确保错误答案不重复、不等于正确答案、不为负数
    */
   private static generateWrongAnswers(correctAnswer: number, min: number, max: number): number[] {
     const wrongAnswers: number[] = []
+    const usedAnswers = new Set<number>([correctAnswer])
     const attempts = 100 // 防止无限循环
     let count = 0
 
     while (wrongAnswers.length < 3 && count < attempts) {
       count++
-      
-      // 生成接近正确答案的错误答案
-      const offset = this.randomInt(1, Math.max(5, Math.floor(max / 5)))
-      const wrongAnswer = this.randomInt(
-        Math.max(min, correctAnswer - offset),
-        Math.min(max * 2, correctAnswer + offset)
-      )
 
-      // 确保不重复且不等于正确答案
-      if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer) && wrongAnswer >= 0) {
+      // 生成接近正确答案的错误答案
+      const offset = Math.max(1, Math.floor(max / 5))
+      let wrongAnswer: number
+
+      // 随机选择生成策略
+      const strategy = Math.random()
+      if (strategy < 0.33) {
+        // 策略1：比正确答案小
+        wrongAnswer = Math.max(0, correctAnswer - this.randomInt(1, offset))
+      } else if (strategy < 0.66) {
+        // 策略2：比正确答案大
+        wrongAnswer = correctAnswer + this.randomInt(1, offset)
+      } else {
+        // 策略3：在范围内随机
+        wrongAnswer = this.randomInt(Math.max(0, min), Math.max(min, max * 2))
+      }
+
+      // 确保不重复且不等于正确答案且不为负数
+      if (wrongAnswer >= 0 && !usedAnswers.has(wrongAnswer)) {
         wrongAnswers.push(wrongAnswer)
+        usedAnswers.add(wrongAnswer)
       }
     }
 
     // 如果生成失败，使用备用方案
     while (wrongAnswers.length < 3) {
-      const backup = correctAnswer + (wrongAnswers.length + 1) * (Math.random() > 0.5 ? 1 : -1)
-      if (backup >= 0 && !wrongAnswers.includes(backup)) {
+      let backup = correctAnswer + (wrongAnswers.length + 1) * (Math.random() > 0.5 ? 1 : -1)
+      backup = Math.max(0, backup) // 确保不为负数
+
+      if (!usedAnswers.has(backup)) {
         wrongAnswers.push(backup)
+        usedAnswers.add(backup)
       }
     }
 

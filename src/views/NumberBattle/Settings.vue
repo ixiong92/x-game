@@ -96,17 +96,6 @@
                   />
                 </div>
               </div>
-
-              <!-- 敌机移动 -->
-              <div class="setting-item">
-                <label class="setting-label">敌机移动</label>
-                <el-switch
-                  v-model="config.enemyMoving"
-                  active-text="开启"
-                  inactive-text="关闭"
-                  size="large"
-                />
-              </div>
             </div>
           </GameCard>
 
@@ -129,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../../stores/game'
 import { ArrowLeft, VideoPlay } from '@element-plus/icons-vue'
@@ -147,6 +136,48 @@ const config = ref({
   difficulty: 'easy' as DifficultyLevel,
   questionCount: 10,
   enemyMoving: false  // 默认敌机移动关闭
+})
+
+/**
+ * 加载上一次保存的配置
+ */
+const loadSavedConfig = () => {
+  try {
+    const saved = localStorage.getItem('game_settings_config')
+    if (saved) {
+      const savedConfig = JSON.parse(saved)
+      config.value = {
+        mode: savedConfig.mode || 'add',
+        numberRange: savedConfig.numberRange || 10,
+        difficulty: savedConfig.difficulty || 'easy',
+        questionCount: savedConfig.questionCount || 10,
+        enemyMoving: false  // 敌机移动始终为 false
+      }
+    }
+  } catch (e) {
+    console.error('加载保存的配置失败:', e)
+  }
+}
+
+/**
+ * 保存当前配置
+ */
+const saveCurrentConfig = () => {
+  try {
+    localStorage.setItem('game_settings_config', JSON.stringify({
+      mode: config.value.mode,
+      numberRange: config.value.numberRange,
+      difficulty: config.value.difficulty,
+      questionCount: config.value.questionCount
+    }))
+  } catch (e) {
+    console.error('保存配置失败:', e)
+  }
+}
+
+// 页面加载时读取保存的配置
+onMounted(() => {
+  loadSavedConfig()
 })
 
 const modes = [
@@ -209,13 +240,16 @@ const startGame = () => {
   soundManager.play('gameStart')
   HapticFeedback.medium()
 
+  // 保存当前配置
+  saveCurrentConfig()
+
   // 保存配置并开始游戏
   gameStore.startGame({
     mode: config.value.mode,
     numberRange: config.value.numberRange,
     difficulty: config.value.difficulty,
     questionCount: config.value.questionCount,
-    enemyMoving: config.value.enemyMoving
+    enemyMoving: false  // 敌机移动始终为 false
   })
 
   router.push('/number-battle')

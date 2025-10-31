@@ -215,6 +215,10 @@ export const useGameStore = defineStore('game', {
       }
 
       this.saveGameHistory()
+
+      // 重置题目缓存，为下一局游戏做准备
+      BattleQuestionGenerator.resetQuestionCache()
+
       return result
     },
 
@@ -227,6 +231,10 @@ export const useGameStore = defineStore('game', {
       this.progress = { ...defaultProgress }
       this.startTime = 0
       this.endTime = 0
+
+      // 重置题目缓存
+      BattleQuestionGenerator.resetQuestionCache()
+
       this.syncGameState()
     },
 
