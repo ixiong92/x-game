@@ -152,13 +152,13 @@ const goToSettings = () => {
 const goToUserCenter = () => {
   soundManager.play('select')
   HapticFeedback.light()
-  router.push('/user-center')
+  ElMessage.info('用户中心正在建设中，敬请期待！')
 }
 
 const goToParentPanel = () => {
   soundManager.play('select')
   HapticFeedback.light()
-  router.push('/parent-panel')
+  ElMessage.info('家长监控正在建设中，敬请期待！')
 }
 </script>
 
